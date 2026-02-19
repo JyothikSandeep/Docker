@@ -18,4 +18,4 @@ due to diffrentiation in versions and dependencies it will work differently in d
 
 Docker and virtual machines??
 
-![alt text](image.png)
+![virtual machine](image.png)
