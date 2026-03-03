@@ -157,7 +157,7 @@ doker build -t myapp
 if any changes build the docker file again:
 
 ```powershell
-doker build -t myapp
+doker build -t myapp .
 ```
 
 
@@ -183,3 +183,153 @@ to stop the container:
 docker stop pedantic_khorana
 
 ```
+
+It will create a new node container
+
+```
+docker run node
+```
+
+To expose an interactive session from inside the container:
+where we can use node js from the container.
+
+```
+docker run -it node
+```
+
+Docker follows layer based approach. when we rebuild the images with some changes in code where it will only change the layer that got updated. From that layer it will update each and every layer.
+
+
+running existing container:
+
+but when we running this command our frontend works but here the terminal wont get struck.
+
+```
+docker start "container name" 
+```
+
+Understanding atttached and detached containers:
+
+in attach mode where we can see logs in the terminal.
+
+In Detach mode we cant see it but in backgroud the docker container will be running.
+
+Docker logs:
+
+to read the docker logs:
+
+```
+docker logs "container name"
+```
+
+interative mode:
+
+where by when we use some thing like input statements like int(input()) like that terminal need to take the input from our container so inorder to do that we have a command like:
+
+```
+docker run -it "container name"
+```
+
+Deleting container:
+
+```
+docker rm "container name"
+```
+
+docker images:
+
+```
+docket images
+```
+
+docket removing images:
+
+
+```
+
+docker rmi "imagename"
+
+```
+
+to remove all container once:
+
+```
+docker container prune
+```
+
+
+Copying a Files into and from a container:
+
+It will copy file from local folder to a container.
+
+```
+
+docker cp dummy/. 5ff3acbf9a7fbbbe5e8805241254eea0c8b82511c2cdeaaac35906fd16613ce2:/test  
+```
+
+where we can do viseversa like copying file from contianer to local machine.
+
+
+```
+ docker cp 5ff3acbf9a7fbbbe5e8805241254eea0c8b82511c2cdeaaac35906fd16613ce2:/test/. dummy 
+```
+
+
+Naming and tagging images and containers:
+
+To change the tag of the Image:
+
+```
+docker tag <Image Id > <Tag ID>
+
+```
+
+To change the tag of the container:
+
+```
+docker run -p 3000:3000 --rm --name  goalcontainer goalapp                  
+
+```
+
+
+Pushing images to docker hub:
+
+
+1.where We need to share the images in two ways one is to sharing the image code so that they will use the same docker file and build.
+2. Sharing the images with docker hub or any private repositories where docker can share images.
+
+
+steps:
+1. create a docker account.
+2. create a new repository.
+3. login to docker in the terminal
+
+```
+docker login
+```
+
+4. push the code in docker hub.
+
+```
+docker push acadamic/node-hello-world
+
+docker push <new repo name>: <tagname>
+```
+
+# pullling the images:
+
+1. where any one call pull the public images.
+
+2. to pull the image:
+
+```
+docker pull acadamic/node-hello-world
+
+```
+
+3. to run it.
+
+```
+docker run -p 8000:8000 --rm  acadamic/node-hello-world
+```
+
