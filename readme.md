@@ -333,3 +333,238 @@ docker pull acadamic/node-hello-world
 docker run -p 8000:8000 --rm  acadamic/node-hello-world
 ```
 
+# Docker Volumes:
+
+Docker volumes are used to persist data outside containers.
+
+Why? Because containers are temporary. If you delete a container, all its internal data is lost unless you store it in a volume.
+
+Think of it like this 🧠:
+
+```
+Container (temporary)
+        |
+        | writes data
+        ↓
+Docker Volume (permanent storage)
+
+```
+
+📦 What is a Docker Volume?
+
+A Docker volume is a storage area managed by Docker to store container data.
+
+Without volume:
+
+```
+Container → data deleted when container removed
+```
+
+With volume:
+
+```
+Container → Volume → Data survives container deletion
+```
+
+🛠️ Create a Volume
+
+```
+docker volume create myvolume
+```
+
+```
+docker volume ls
+```
+
+Example output:
+
+DRIVER    VOLUME NAME
+local     myvolume
+
+▶️ Use Volume With Container
+
+```
+docker run -d \
+-p 3000:3000 \
+-v myvolume:/app/data \
+myimage
+```
+
+Explanation:
+
+```
+-v myvolume:/app/data
+```
+
+means:
+
+```
+Docker Volume  → Container Folder
+myvolume       → /app/data
+```
+
+Any files written to /app/data will be saved in the volume.
+
+
+📂 Example
+
+Container writes file:
+
+
+```
+/app/data/users.json
+```
+
+Even if container stops:
+
+```
+
+docker rm container
+```
+
+The file still exists inside the volume.
+
+When you run container again with same volume:
+
+```
+-v myvolume:/app/data
+```
+
+The data comes back.
+
+🔎 Inspect Volume
+
+```
+docker volume inspect myvolume
+```
+
+
+Shows the physical storage location.
+
+
+```
+/var/lib/docker/volumes/myvolume/_data
+```
+
+🧹 Remove Volume
+
+Delete one:
+
+```
+docker volume rm myvolume
+```
+
+Delete unused volumes:
+
+```
+docker volume prune
+```
+
+
+🧠 Think Like This
+1️⃣ Docker Volume
+
+Storage location is managed by Docker.
+```
+Container
+   ↓
+Docker Volume
+   ↓
+/var/lib/docker/volumes/...
+```
+Example:
+```
+docker run -v myvolume:/app/data myimage
+```
+Here:
+```
+myvolume  → Docker storage
+/app/data → container folder
+```
+
+Data is stored inside Docker's internal directory.
+
+📂 2️⃣ Bind Mount
+
+
+```
+Storage location is your system folder.
+
+Container
+   ↓
+Host Folder (your laptop)
+
+```
+
+Example:
+
+```
+docker run -v $(pwd):/app myimage
+```
+
+Meaning:
+```
+Your Current Folder → /app inside container
+
+```
+
+If container writes:
+```
+/app/users.json
+```
+
+It will appear in your computer folder:
+
+project/users.json
+🔍 Visual Comparison
+Volume
+
+```
+Container
+   ↓
+Docker Volume
+   ↓
+Docker Storage
+
+```
+
+Bind Mount
+
+```
+Container
+   ↓
+Your Local Folder
+
+```
+
+⚡ Example
+
+Your folder:
+```
+project/
+  index.js
+```
+Run:
+
+```
+docker run -v $(pwd):/app nodeapp
+```
+
+If container creates:
+
+```
+/app/log.txt
+```
+
+Your computer gets:
+
+```
+project/log.txt
+```
+
+| Feature                | Bind Mount           | Volume          |
+| ---------------------- | -------------------- | --------------- |
+| Storage location       | Your computer folder | Docker storage  |
+| Used for               | Development          | Production data |
+| Code updates instantly | ✔ Yes                | ❌ No            |
+| Managed by Docker      | ❌ No                 | ✔ Yes           |
