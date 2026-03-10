@@ -568,3 +568,178 @@ project/log.txt
 | Used for               | Development          | Production data |
 | Code updates instantly | ✔ Yes                | ❌ No            |
 | Managed by Docker      | ❌ No                 | ✔ Yes           |
+
+
+Example .dockerignore
+
+Create a file called:
+```
+.dockerignore
+```
+
+
+```
+node_modules
+.git
+.gitignore
+Dockerfile
+.dockerignore
+npm-debug.log
+.env
+dist
+build
+```
+
+
+project/
+ ├── Dockerfile
+ ├── .dockerignore
+ ├── package.json
+ ├── node_modules/
+ └── index.js
+
+
+ When Docker builds:
+
+docker build -t myapp .
+
+Docker ignores node_modules.
+
+Instead Docker installs dependencies inside container.
+
+Typical Node.js .dockerignore
+
+```
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env
+```
+
+Setting Environment Variables in Docker
+
+There are 3 common ways.
+
+Method 1️⃣ ENV inside Dockerfile
+
+In your Dockerfile:
+```
+ENV PORT=3000
+ENV NODE_ENV=production
+```
+
+```
+FROM node:18
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+ENV PORT=3000
+
+CMD ["node","index.js"]
+```
+
+Now inside Node app:
+```
+
+process.env.PORT
+```
+
+Method 2️⃣ Pass ENV while running container
+
+You can set variables when running container.
+```
+
+docker run -e PORT=4000 myapp
+```
+
+Example:
+```
+
+docker run -p 4000:4000 -e PORT=4000 myapp
+```
+
+Inside app:
+
+process.env.PORT
+
+Value = 4000
+
+Method 3️⃣ .env file (Most common)
+
+Create .env file:
+
+```
+PORT=5000
+DB_URL=mongodb://mongo:27017/app
+API_KEY=12345
+```
+
+Run container:
+```
+docker run --env-file .env myapp
+```
+
+Docker loads all variables.
+
+Example Node App
+```
+const express = require("express")
+const app = express()
+
+const PORT = process.env.PORT || 3000
+
+app.get("/", (req,res)=>{
+    res.send("Server running")
+})
+
+app.listen(PORT,()=>{
+    console.log("Running on",PORT)
+})
+```
+🧠 Important Note
+
+Never put secrets directly in Dockerfile:
+```
+ENV API_KEY=123456
+```
+
+Because Docker images are publicly inspectable.
+
+Better:
+```
+.env
+```
+or
+
+docker secrets (production)
+🚀 Typical Docker Setup (Node Project)
+
+.dockerignore
+```
+node_modules
+.git
+.env
+```
+.env
+
+```
+PORT=3000
+MONGO_URL=mongodb://mongo:27017/app
+```
+Run
+
+```
+docker run --env-file .env myapp
+```
+
+
+![alt text](image-3.png)
