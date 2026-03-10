@@ -740,6 +740,255 @@ Run
 ```
 docker run --env-file .env myapp
 ```
+Docker networks - Multiple containers:
 
 
 ![alt text](image-3.png)
+
+
+![alt text](image-4.png)
+
+![alt text](image-5.png)
+
+1️⃣ Why Docker Networks Are Needed
+
+Imagine you have two containers:
+
+Node API
+MongoDB
+
+Node must connect to MongoDB.
+
+Without networking they cannot communicate.
+
+Docker networks allow containers to talk to each other using container names.
+
+🧠 Architecture Example
+```
+User
+ ↓
+Node Container
+ ↓
+Mongo Container
+```
+
+Inside Node:
+```
+
+mongodb://mongo:27017/mydb
+```
+
+Notice mongo is the container name.
+
+2️⃣ Create a Docker Network
+
+Create a custom network:
+
+docker network create mynetwork
+
+Check networks:
+```
+docker network ls
+```
+
+Example output:
+```
+
+NETWORK ID     NAME
+abc123         bridge
+def456         mynetwork
+```
+
+3️⃣ Run MongoDB Container
+
+```
+docker run -d \
+--name mongo \
+--network mynetwork \
+-v mongo-data:/data/db \
+mongo
+```
+
+Explanation:
+
+Option	Meaning
+--name mongo	container name
+--network mynetwork	attach to network
+-v mongo-data:/data/db	persistent database storage
+
+Now MongoDB is accessible as:
+```
+mongo:27017
+```
+
+inside the network.
+
+4️⃣ Run Node Container
+
+Now start Node container on the same network.
+```
+docker run -d \
+--name nodeapp \
+--network mynetwork \
+-p 3000:3000 \
+nodeapp
+```
+
+Now both containers are connected.
+
+5️⃣ Node App Connection Example
+
+Inside your Node app:
+```
+const mongoose = require("mongoose")
+
+mongoose.connect("mongodb://mongo:27017/mydb")
+.then(()=> console.log("Mongo connected"))
+.catch(err => console.log(err))
+```
+Important part:
+
+mongo
+
+That is the Mongo container name.
+
+Docker DNS automatically resolves it.
+```
+🧠 Network Visualization
+           Docker Network
+             mynetwork
+        ┌─────────┬─────────┐
+        │         │         │
+     NodeApp    MongoDB   (other containers)
+        │         │
+        └──────communication──────┘
+```
+Containers can talk using container names as hostnames.
+
+6️⃣ Inspect Network
+
+See connected containers:
+
+docker network inspect mynetwork
+
+Example:
+
+Containers:
+   mongo
+   nodeapp
+7️⃣ Multiple Containers Example
+
+Let’s add Redis too.
+```
+docker run -d \
+--name redis \
+--network mynetwork \
+redis
+```
+
+Network now:
+```
+mynetwork
+   │
+   ├── Node Container
+   ├── Mongo Container
+   └── Redis Container
+```
+Node can access:
+```
+mongo:27017
+redis:6379
+```
+
+8️⃣ Multiple Networks Example
+
+Sometimes containers should not all talk to each other.
+
+Example architecture:
+
+Frontend → Backend → Database
+
+We create two networks.
+```
+Create Networks
+docker network create frontend-net
+docker network create backend-net
+Run Mongo (backend network)
+docker run -d \
+--name mongo \
+--network backend-net \
+mongo
+Run Backend (both networks)
+docker run -d \
+--name backend \
+--network backend-net \
+nodeapp
+```
+
+Then connect backend to frontend network:
+
+docker network connect frontend-net backend
+```
+Run Frontend
+docker run -d \
+--name frontend \
+--network frontend-net \
+```
+reactapp
+🧠 Final Architecture
+```
+Frontend Network
+     │
+  React App
+     │
+  Backend API
+     │
+Backend Network
+     │
+   MongoDB
+   ```
+
+Frontend cannot directly access MongoDB.
+
+This improves security.
+
+9️⃣ List Networks
+```
+docker network ls
+```
+🔟 Remove Network
+```
+docker network rm mynetwork
+```
+(Containers must be stopped first)
+
+🚀 Real Projects Usually Use Docker Compose
+
+Instead of writing many docker run commands.
+
+Example docker-compose.yml:
+```
+
+version: "3"
+
+services:
+  nodeapp:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
+```
+Run everything:
+
+docker compose up
+
+Docker automatically creates a network for all services.
